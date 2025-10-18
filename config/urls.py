@@ -23,5 +23,5 @@ urlpatterns = [
     
     #path("api/medications/", include("medications.urls")),
     #path("api/reminders/", include("reminders.urls")),
-    #path("api/shared/", include("shared_access.urls")),
+    path("api/shared/", include("shared_access.urls")),
 ]
