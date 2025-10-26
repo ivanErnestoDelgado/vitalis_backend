@@ -57,7 +57,7 @@ class UserRole(models.Model):
         unique_together = ("user", "role")  # evita duplicados
 
     def __str__(self):
-        return f"{self.user.username} - {self.role.name}"
+        return f"{self.user.first_name} - {self.role.name}"
 
 
 # Ejemplo de perfiles extendidos
@@ -74,7 +74,7 @@ class FamilyProfile(models.Model):
     related_patients = models.ManyToManyField("PatientProfile", related_name="caregivers")
 
     def __str__(self):
-        return f"Family Profile: {self.user.username}"
+        return f"Family Profile: {self.user.first_name}"
 
 
 class DoctorProfile(models.Model):
@@ -83,4 +83,4 @@ class DoctorProfile(models.Model):
     specialty = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"Doctor Profile: {self.user.username}"
+        return f"Doctor Profile: {self.user.first_name}"
