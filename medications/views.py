@@ -4,7 +4,7 @@ from .serializers import (
     DrugSerializer, DrugVariantSerializer, DiagnosisSerializer,
     MedicationSerializer, UnsafeMedicationSerializer
 )
-from .permissions import IsAdminOrReadOnly, IsDoctor
+from utils.permissions import IsAdminOrReadOnly, IsDoctor
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
