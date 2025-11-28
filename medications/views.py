@@ -2,7 +2,7 @@ from rest_framework import viewsets, permissions
 from .models import Drug, DrugVariant, Diagnosis, Medication, UnsafeMedication
 from .serializers import (
     DrugSerializer, DrugVariantSerializer, DiagnosisSerializer,
-    MedicationSerializer, UnsafeMedicationSerializer
+    MedicationSerializer, UnsafeMedicationSerializer,DrugWithVariantsSerializer
 )
 from utils.permissions import IsAdminOrReadOnly, IsDoctor
 from rest_framework.decorators import action
@@ -19,7 +19,14 @@ class DrugViewSet(viewsets.ModelViewSet):
     queryset = Drug.objects.all()
     serializer_class = DrugSerializer
     permission_classes = [IsAdminOrReadOnly]
-
+    @action(detail=False, methods=["get"], url_path="with-variants")
+    def list_with_variants(self, request):
+        """
+        Retorna todos los medicamentos junto con sus variantes.
+        """
+        drugs = Drug.objects.prefetch_related("variants").all()
+        serializer = DrugWithVariantsSerializer(drugs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class DrugVariantViewSet(viewsets.ModelViewSet):
     queryset = DrugVariant.objects.all()
@@ -39,17 +46,30 @@ class DiagnosisViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(diagnoses, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class MedicationViewSet(viewsets.ModelViewSet):
-    queryset = Medication.objects.all()
+class DoctorMedicationViewSet(viewsets.ModelViewSet):
+    queryset = Medication.objects.filter(created_by_patient=False)
     serializer_class = MedicationSerializer
     permission_classes = [IsDoctor]
-    #Endpoint para que el paciente vea sus medicamentos
+
     @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
     def my_medications(self, request):
         user = request.user
-        meds = Medication.objects.filter(patient=user).select_related("drug_variant", "doctor").order_by("-created_at")
+        meds = Medication.objects.filter(patient=user).order_by("-created_at")
         serializer = self.get_serializer(meds, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
+    
+class PatientMedicationViewSet(viewsets.ModelViewSet):
+    serializer_class = MedicationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Medication.objects.filter(
+            patient=self.request.user,
+        ).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(patient=self.request.user, created_by_patient=True)
+
 
 
 class PatientUnsafeMedicationViewSet(viewsets.ModelViewSet):
