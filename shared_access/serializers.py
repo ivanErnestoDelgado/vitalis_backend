@@ -1,15 +1,23 @@
 from rest_framework import serializers
 from .models import SharedAccess, SharedAccessToken, AccessHistory
 from users.models import User
+from users.serializers import UserSerializer
 
 class SharedAccessSerializer(serializers.ModelSerializer):
-    owner_email = serializers.EmailField(source='owner.user.email', read_only=True)
-    shared_with_email = serializers.EmailField(source='shared_with.user.email', read_only=True)
+    owner = UserSerializer(read_only=True)
+    shared_with = UserSerializer(read_only=True)
 
     class Meta:
         model = SharedAccess
-        fields = ['id', 'owner', 'owner_email', 'shared_with', 'shared_with_email', 'role', 'status', 'created_at']
-        read_only_fields = ['status', 'created_at']
+        fields = [
+            "id",
+            "owner",
+            "shared_with",
+            "role",
+            "status",
+            "created_at",
+        ]
+        read_only_fields = ["created_at", "status"]
 
 
 class SharedAccessInvitationSerializer(serializers.ModelSerializer):
