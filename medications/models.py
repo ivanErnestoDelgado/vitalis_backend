@@ -41,13 +41,17 @@ class Diagnosis(models.Model):
 
 class Medication(models.Model):
     """Relación entre paciente, doctor y medicamento prescrito."""
-    doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="prescribed_medications")
+    doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="prescribed_medications", null=True)
     patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="medications")
     drug_variant = models.ForeignKey(DrugVariant, on_delete=models.CASCADE)
     dosage_instructions = models.TextField()
     start_date = models.DateField()
     end_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Nuevo:
+    created_by_patient = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"{self.drug_variant} for {self.patient}"
