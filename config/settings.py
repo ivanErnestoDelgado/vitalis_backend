@@ -10,9 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import json
+import os
 from pathlib import Path
 from decouple import config, Csv
 from datetime import timedelta
+
+import firebase_admin
+from firebase_admin import credentials
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
+    'fcm_django',
 
     #apps del proyecto
     'users',
@@ -159,3 +165,28 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,                 # invalida los anteriores
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+#Configuración para Firebase
+
+FIREBASE_ADMIN_SDK_NAME=config("FIREBASE_ADMIN_SDK_NAME")
+FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, FIREBASE_ADMIN_SDK_NAME)
+
+
+if os.path.exists(FIREBASE_CREDENTIALS_PATH):
+    with open(FIREBASE_CREDENTIALS_PATH) as f:
+        FIREBASE_CREDENTIALS = json.load(f)
+else:
+    FIREBASE_CREDENTIALS = {}
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+    firebase_admin.initialize_app(cred)
+    print("Iniciando firebase")
+
+FCM_DJANGO_SETTINGS = {
+    "ONE_DEVICE_PER_USER": False,  # Permite múltiples dispositivos por usuario
+    "DELETE_INACTIVE_DEVICES": True,  # Elimina dispositivos inactivos automáticamente
+    "ALLOW_DUPLICATE_REGISTRATIONS": True,
+    "DEFAULT_DEVICE_MODEL": "users.CustomFCMDevice",
+}
+
