@@ -6,8 +6,11 @@ from .permissions import IsCaregiverOfPatient,IsDoctorOfPatient
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework.views import APIView
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from .models import Role, UserRole, PatientProfile, FamilyProfile, DoctorProfile
+from .models import Role, UserRole, PatientProfile, FamilyProfile, DoctorProfile, CustomFCMDevice
 from .serializers import (
     UserSerializer, RoleSerializer,
     PatientProfileSerializer, FamilyProfileSerializer, DoctorProfileSerializer,LoginSerializer,
@@ -91,3 +94,25 @@ class PatientDetailForDoctor(APIView):
                 "email": patient.user.email,
             }
         })
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def register_fcm_token(request):
+    token = request.data.get("fcm_token")
+
+    if not token:
+        return Response({"detail": "El token FCM es requerido."}, status=400)
+
+    device, created = CustomFCMDevice.objects.update_or_create(
+        user=request.user,
+        defaults={
+            "registration_id": token,
+            "type": "android",
+            "active": True
+        }
+    )
+
+    return Response({
+        "detail": "Token registrado correctamente.",
+        "created": created
+    })

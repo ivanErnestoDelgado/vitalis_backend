@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser,BaseUserManager
 from django.db import models
+from fcm_django.models import AbstractFCMDevice
+
 
 
 class CustomUserManager(BaseUserManager):
@@ -84,3 +86,11 @@ class DoctorProfile(models.Model):
 
     def __str__(self):
         return f"Doctor Profile: {self.user.first_name}"
+
+class CustomFCMDevice(AbstractFCMDevice):
+    registration_id = models.TextField()  
+    users = models.ManyToManyField(User, related_name="devices")
+
+    class Meta:
+        verbose_name = "Dispositivo FCM"
+        verbose_name_plural = "Dispositivos FCM"

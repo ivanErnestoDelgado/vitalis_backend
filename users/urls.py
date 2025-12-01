@@ -20,4 +20,5 @@ urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
     path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("verify/", TokenVerifyView.as_view(), name="token_verify"),
+    path("register-fcm-token/", register_fcm_token, name="register_fcm_token"),
 ]

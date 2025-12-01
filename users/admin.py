@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User,DoctorProfile
+from .models import User,DoctorProfile,CustomFCMDevice
 
 # Register your models here.
 
@@ -12,3 +12,9 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(DoctorProfile)
 class DoctorProfileAdmin(admin.ModelAdmin):
     list_display=()
+
+@admin.register(CustomFCMDevice)
+class CustomFCMDeviceAdmin(admin.ModelAdmin):
+    list_display=('registration_id','name','active','date_created')
+    search_fields=('registration_id','name')
+    list_filter=('active','date_created')   
