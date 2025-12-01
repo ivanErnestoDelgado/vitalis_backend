@@ -50,12 +50,12 @@ class Reminder(models.Model):
         Devuelve todos los usuarios que deben recibir notificación de este recordatorio:
         el paciente, el creador y los usuarios compartidos.
         """
-        receivers = {self.patient}
-        if self.created_by:
-            receivers.add(self.created_by)
-        shared_users = [access.user for access in self.shared_with.all()]
-        receivers.update(shared_users)
-        return list(receivers)
+        users = {self.patient, self.created_by}
+
+        for access in self.shared_with.filter(receive_notifications=True):
+            users.add(access.user)
+
+        return list(users)  
 
 
 class ReminderAccess(models.Model):

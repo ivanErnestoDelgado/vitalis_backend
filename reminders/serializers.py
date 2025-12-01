@@ -1,9 +1,11 @@
+from django.utils import timezone
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Reminder, ReminderAccess,ReminderLog
 from medications.models import Medication
 from shared_access.models import SharedAccess 
 from django.db import models 
+from users.serializers import UserSerializer
 
 User = get_user_model()
 
@@ -12,8 +14,7 @@ User = get_user_model()
 # ReminderAccessSerializer
 # ===============================
 class ReminderAccessSerializer(serializers.ModelSerializer):
-    user_email = serializers.EmailField(source="user.email", read_only=True)
-    user_id = serializers.IntegerField(source="user.id", read_only=True)
+    user_info=UserSerializer(source="user", read_only=True)
 
     class Meta:
         model = ReminderAccess
@@ -21,8 +22,7 @@ class ReminderAccessSerializer(serializers.ModelSerializer):
             "id",
             "reminder",
             "user",
-            "user_id",
-            "user_email",
+            "user_info" ,
             "can_edit",
             "can_delete",
             "receive_notifications",
@@ -120,7 +120,11 @@ class ReminderSerializer(serializers.ModelSerializer):
         else:
             # Si se está creando en nombre de un paciente (ej. doctor o cuidador)
             validated_data["created_by"] = user
-
+        if(validated_data["frequency"]=="daily"):
+            validated_data["next_trigger_time"]=validated_data["start_time"] + timezone.timedelta(days=1)
+            validated_data["interval_hours"]=24
+        if(validated_data["frequency"]=="custom" and validated_data.get("interval_hours")):
+            validated_data["next_trigger_time"]=validated_data["start_time"] + timezone.timedelta(hours=validated_data["interval_hours"])
         reminder = super().create(validated_data)
         return reminder
 
