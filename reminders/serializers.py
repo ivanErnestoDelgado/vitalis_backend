@@ -66,6 +66,8 @@ class ReminderSerializer(serializers.ModelSerializer):
     shared_with = ReminderAccessSerializer(source="shared_with.all", many=True, read_only=True)
     medication_name = serializers.CharField(source="medication.name", read_only=True)
     patient_email = serializers.EmailField(source="patient.email", read_only=True)
+    patient_name=serializers.CharField(source="patient.first_name", read_only=True)
+    patient_last_name=serializers.CharField(source="patient.last_name", read_only=True)
     created_by_email = serializers.EmailField(source="created_by.email", read_only=True)
 
     patient = serializers.PrimaryKeyRelatedField(
@@ -83,6 +85,8 @@ class ReminderSerializer(serializers.ModelSerializer):
             "id",
             "patient",
             "patient_email",
+            "patient_name",
+            "patient_last_name",
             "medication",
             "medication_name",
             "title",
@@ -104,6 +108,8 @@ class ReminderSerializer(serializers.ModelSerializer):
             "created_by_email",
             "shared_with",
             "next_trigger_time",
+            "patient_name",
+            "patient_last_name"
         ]
 
     def create(self, validated_data):

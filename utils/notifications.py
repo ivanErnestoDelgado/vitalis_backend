@@ -15,7 +15,7 @@ def send_reminder_push(reminder):
 
     # Quitar duplicados
     receivers = list(set(receivers))
-
+    
     # Obtener dispositivos
     devices = FCMDevice.objects.filter(user__in=receivers)
 

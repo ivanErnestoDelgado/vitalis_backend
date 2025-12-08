@@ -80,7 +80,7 @@ class PatientReminderLogViewSet(viewsets.ModelViewSet):
             "was_taken": true,
             "notes": "El paciente lo tomó a tiempo"
         }
-        """
+        """ 
         reminder_id = request.data.get("reminder_id")
         was_taken = request.data.get("was_taken")
         notes = request.data.get("notes", "")

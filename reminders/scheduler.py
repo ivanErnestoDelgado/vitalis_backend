@@ -5,37 +5,52 @@ from django.conf import settings
 
 from reminders.models import Reminder
 from users.models import CustomFCMDevice
+from firebase_admin import messaging
 
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 def send_push_to_reminder_users(reminder: Reminder):
     """Obtiene el paciente, creador y usuarios con acceso y les envía push."""
+    logger.info(f"Enviando notificaciones para reminder {reminder.id}...")
 
     users_to_notify = reminder.get_all_receivers()
 
     devices = CustomFCMDevice.objects.filter(user__in=users_to_notify)
+    logger.info(f"Se encontraron {devices.count()} dispositivos FCM para reminder {reminder.id}")
 
     if not devices.exists():
         logger.info(f"No hay dispositivos FCM para reminder {reminder.id}")
         return
 
+    patient = reminder.patient
+
     payload = {
-        "title": reminder.title,
-        "body": reminder.message or "Tienes un recordatorio pendiente.",
-        "reminder_id": reminder.id,
+        "title": f"Recordatorio: {reminder.title}",
+        "body": f"Paciente {patient.first_name} {patient.last_name}: {reminder.message}",
+        "reminder_id": str(reminder.id), 
     }
 
-    devices.send_message(
-        title=payload["title"],
-        body=payload["body"],
-        data=payload,
-        sound="default",
+    logger.info(f"Payload para reminder {reminder.id}: {payload}")
+
+    # Crear mensaje de Firebase
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title=payload["title"],
+            body=payload["body"]
+        ),
+        data=payload  
     )
 
-    logger.info(f"Notificaciones enviadas para reminder {reminder.id}")
-
+    try:
+        for device in devices:  
+            response = device.send_message(message)
+            logger.info(f"Notificación enviada al dispositivo {device.id} (usuario {device.user.first_name}): {response}")
+    except Exception as e:
+        logger.info(f"Error enviando notificaciones para reminder {reminder.id}: {e}")
+    else:
+        logger.info(f"Notificaciones enviadas para reminder {reminder.id}")
 
 def update_next_trigger(reminder):
     """Genera el siguiente horario según la frecuencia."""
@@ -58,6 +73,8 @@ def update_next_trigger(reminder):
 
 def process_reminders():
     """Procesa los reminders cuya hora de disparo ya llegó."""
+    
+    logger.info(f" Empezando procesamiento de recordatorios...")
     now = timezone.now()
 
     due_reminders = Reminder.objects.filter(

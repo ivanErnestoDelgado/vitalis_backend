@@ -13,3 +13,7 @@ class DrugVariantAdmin(admin.ModelAdmin):
 @admin.register(UnsafeMedication)
 class UnsafeMedicationsAdmin(admin.ModelAdmin):
     list_display=('drug','patient','reason')
+
+@admin.register(Medication)
+class MedicationAdmin(admin.ModelAdmin):
+    list_display=('patient','drug_variant','start_date','end_date','created_by_patient','created_at')
