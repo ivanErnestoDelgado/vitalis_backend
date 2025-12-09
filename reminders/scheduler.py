@@ -116,7 +116,7 @@ def start_reminder_scheduler():
         return
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(process_reminders, "interval", seconds=30)
+    scheduler.add_job(process_reminders, "interval", seconds=5)
     scheduler.start()
 
     logger.info("Reminder Scheduler iniciado correctamente.")
